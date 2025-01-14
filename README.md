@@ -1,8 +1,8 @@
 # Meteor Scatter
 
-This project was developed as part of a student project. The aim was to detect meteors using ML methods.
+This project was developed as part of a student project. The aim was to detect and classify meteors using ML methods.
 
-The project consists of two parts: the Meteor Detection and the Flask Server. The meteor detection part is responsible for detecting meteors and saving the data in a CSV file. The Flask server application reads the CSV file and displays the data in a web interface.
+The project consists of two parts: the **Meteor Detection & Classification** and the **Flask Server**. The meteor detection & classification part is responsible for saving the detections in a CSV file. The Flask Server application reads the CSV file and displays the data in a web interface.
 
 ![](resources/preview.png)
 
@@ -13,9 +13,9 @@ The project consists of two parts: the Meteor Detection and the Flask Server. Th
 - [Maximilian Bundscherer](mailto:maximilian.bundscherer@th-nuernberg.de)
 - [Prof. Dr. Thomas Lauterbach](mailto:thomas.lauterbach@th-nuernberg.de)
 
-## Meteor Detection
+## Meteor Detection & Classification
 
-See other README file and subset in seperate folder [meteor_detection/](meteor_detection/)
+See other README file and subset in seperate folder [meteor_detect_class/](meteor_detect_class/)
 
 ## Flask Server
 
