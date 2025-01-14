@@ -15,7 +15,7 @@ The project consists of two parts: the Meteor Detection and the Flask Server. Th
 
 ## Meteor Detection
 
-See other README file and subset in seperate folder [meteor_detection_scripts/](meteor_detection_scripts/)
+See other README file and subset in seperate folder [meteor_detection/](meteor_detection/)
 
 ## Flask Server
 

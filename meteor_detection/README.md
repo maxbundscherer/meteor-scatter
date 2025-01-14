@@ -2,7 +2,7 @@
 
 This project comprises two main Python scripts that work together to detect and classify meteor bursts from audio spectrograms.
 
-Please see also [description](Dokumentation_Meteor_Detection.docx).
+Please see also [documentation](Dokumentation_Meteor_Detection.docx).
 
 ## Overview
 
