@@ -9,7 +9,7 @@ The project consists of two parts: the **Meteor Detection & Classification** and
 ## Authors
 
 - [Robert Heinrich](mailto:heinrich.robert93@yahoo.de)
-- [Sebastian Kolb](mailto:tbd@tbd.de)
+- [Sebastian Kolb](mailto:sebastian.kolb@online.de)
 - [Maximilian Bundscherer](mailto:maximilian.bundscherer@th-nuernberg.de)
 - [Prof. Dr. Thomas Lauterbach](mailto:thomas.lauterbach@th-nuernberg.de)
 
