@@ -12,26 +12,20 @@ import twitchrealtimehandler
 import detector_and_classification as detection
 import os
 
-# TODO ALERTS
+# import twitchhandler.py
 
-C_FILE_PATH_OUT = "/home/meteor/Documents/meteor-detection/csv-out/"  # TODO CSV OUT PATH
-C_FILE_PATH_OUT_SPEC = "/home/meteor/Documents/meteor-detection/spec-out/"  # TODO SPEC OUT PATH
+# Einstellungen
+# FORMAT = pyaudio.paInt16  # Audioformat (16-bit)
+# CHANNELS = 1  # Stereo-Kanaele
+# RATE = 44100  # Abtastrate (Hz)
+# CHUNK = 1024 * 4  # Groesse der Datenbloecke
+# DURATION = 30  # Aufnahmedauer in Sekunden
+# FILENAME = "loopback_recording.wav"  # Datei, in der die Aufnahme gespeichert wird
+DISPLAY = False
 
-C_MS_SPEC_CUT_FACTOR = 8  # TODO Noise Filter
-
-C_MS_CLUSTER_MIN_SAMPLES = 5  # TODO Cluster Filter
-C_MS_CLUSTER_EPSILON = 30  # TODO Cluster Filter
-
+C_FILE_PATH_OUT = "/home/meteor/Desktop/testMSOUT/"
 C_FILE_PATH_SPEC = "/tmp/spectrogram2.jpg"
-C_DISPLAY = False
-C_SAMPLE_RATE = 5000
-C_SEG_LEN = 30
 
-# Assert Env
-assert os.path.exists(C_FILE_PATH_OUT), f"Path not found: {C_FILE_PATH_OUT}"
-assert os.path.exists(C_FILE_PATH_OUT_SPEC), f"Path not found: {C_FILE_PATH_OUT_SPEC}"
-
-# Time Measurement
 time_meas_dict = {}
 
 
@@ -45,19 +39,41 @@ def end_time_meas(idk: str):
     print(f"Time for {idk}: {time.total_seconds()} seconds")
 
 
-# Augio Grabber
+assert os.path.exists(C_FILE_PATH_OUT), f"Path not found: {C_FILE_PATH_OUT}"
+
 audio_grabber = twitchrealtimehandler.TwitchAudioGrabber(
     twitch_url="https://www.twitch.tv/astronomiemuseum",
     # twitch_url="https://www.twitch.tv/noway4u_sir",
     blocking=True,  # wait until a segment is available
-    segment_length=C_SEG_LEN,  # segment length in seconds
-    rate=C_SAMPLE_RATE,  # sampling rate of the audio
+    segment_length=30,  # segment length in seconds
+    rate=5000,  # sampling rate of the audio
     channels=1,  # number of channels
     dtype=np.int16  # quality of the audio could be [np.int16, np.int32, np.float32, np.float64]
 )
 
 
-# Proc Spec
+# def load_wav(filename):
+#     with wave.open(filename, 'r') as wav_file:
+#         params = wav_file.getparams()
+#         num_channels = params.nchannels
+#         sample_width = params.sampwidth
+#         frame_rate = params.framerate
+#         num_frames = params.nframes
+#
+#         raw_data = wav_file.readframes(num_frames)
+#         total_samples = num_frames * num_channels
+#
+#         if sample_width == 2:
+#             fmt = f"{total_samples}h"
+#         else:
+#             raise ValueError("Unsupported sample width")
+#
+#         integer_data = struct.unpack(fmt, raw_data)
+#         audio_data = np.array(integer_data).reshape(-1, num_channels)
+#
+#         return audio_data, frame_rate
+
+
 def plot_spectrogram(iq_segment, fs, display=True, vmin=10, vmax=30):
     # Um Rauschgrund zu entfernen wird die Rauschleistung berechnet:
     NFFT = 2048
@@ -82,7 +98,7 @@ def plot_spectrogram(iq_segment, fs, display=True, vmin=10, vmax=30):
     Pxx_db[np.isinf(Pxx_db)] = -np.inf
 
     plt.imshow(Pxx_db, aspect='auto', origin='lower', extent=[bins[0], bins[-1], freqs[0], freqs[-1]],
-               vmin=power_density_db_hz / factor + C_MS_SPEC_CUT_FACTOR, vmax=40)
+               vmin=power_density_db_hz / factor + 8, vmax=40)
     # plt.xlabel('Time [s]')
     # plt.ylabel('Frequency [Hz]')
     # plt.title('Spectrogram 25 Seconds')
@@ -98,9 +114,64 @@ def plot_spectrogram(iq_segment, fs, display=True, vmin=10, vmax=30):
     plt.close()
 
 
-# Process Loop
+# def list_audio_devices():
+#     # Liste alle verfuegbaren Audioeingabegeraete auf.
+#     audio = pyaudio.PyAudio()
+#     print('Verfuegbare Audiogeraete:')
+#     for i in range(audio.get_device_count()):
+#         device = audio.get_device_info_by_index(i)
+#         print(
+#             f"Index {i}: {device['name']} - {device['maxInputChannels']} Eingaenge, {device['maxOutputChannels']} Ausgaenge")
+#     audio.terminate()
+#
+#
+# def record_loopback(device_index):
+#     """Zeichnet Audio vom angegebenen Geraet auf."""
+#     audio = pyaudio.PyAudio()
+#
+#     # Oeffne den Stream
+#     stream = audio.open(format=FORMAT, channels=CHANNELS,
+#                         rate=RATE, input=True,
+#                         input_device_index=device_index,
+#                         frames_per_buffer=CHUNK)
+#
+#     # Oeffne die WAV-Datei zum Schreiben
+#     wf = wave.open(FILENAME, 'wb')
+#     wf.setnchannels(CHANNELS)
+#     wf.setsampwidth(audio.get_sample_size(FORMAT))
+#     wf.setframerate(RATE)
+#
+#     print("Aufnahme gestartet...")
+#     for _ in range(0, int(RATE / CHUNK * DURATION)):
+#         data = stream.read(CHUNK, exception_on_overflow=False)
+#         wf.writeframes(data)  # Schreibe Frames direkt in die Datei
+#     print("Aufnahme beendet.")
+#
+#     # Schliesse den Stream und die Datei
+#     stream.stop_stream()
+#     stream.close()
+#     audio.terminate()
+#     wf.close()
+#
+#     print(f"Audio erfolgreich gespeichert in {FILENAME}")
 
-fs = C_SAMPLE_RATE
+
+# audio_segment = audio_grabber.grab()
+
+# Liste alle verfuegbaren Geraete
+# list_audio_devices()
+
+# Waehle den Index des Loopback-Geraets aus
+# device_index = int(input("Gib den Index des Loopback-Geraets ein: "))
+# record_loopback(device_index)
+
+# iq_data, fs = load_wav(FILENAME)
+# print(type(iq_data))
+# print(iq_data.shape)
+# print(iq_data[:10])
+# raise Exception("Stop")
+# iq_segment = iq_data
+fs = 5000
 n_critical = 0
 n_non_critical = 0
 
@@ -110,6 +181,7 @@ save_interval = timedelta(minutes=59.8)  # Intervall von 1h
 save_interval2 = timedelta(hours=24)  # Intervall von 24 h
 
 previous_date = datetime.now().strftime('%Y-%m-%d')
+# output_file = "values_sum.txt"  # Datei zum Speichern der Summe
 # Aktuelles Datum im Format YYYYMMDD
 date_string = datetime.now().strftime("%Y%m%d")
 separator = ";"
@@ -125,16 +197,11 @@ if not os.path.exists(file_name):
 else:
     print(f"Datei {file_name} existiert bereits.")
 
+#
+
 while True:
     current_date = datetime.now().strftime('%Y-%m-%d')
-    log_time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    print()
-    print("[INFO] Starte neuen Durchlauf...")
-    print(f"Startzeit: {start_time} / Current Date {current_date} / Current Time {log_time_str}\n")
-
-    # time.sleep(2)
-    # raise Exception("Test Error")
+    print(f"Startzeit: {start_time}\n")
 
     # Schritt 1: Audiosegment erfassen
     start_time_meas("grab_audio")
@@ -147,37 +214,29 @@ while True:
         time.sleep(5)  # Wartezeit bei Fehlern
         continue
     print(f"Audiosegment Größe: {audio_segment.shape}")
-    if audio_segment.shape[0] != C_SEG_LEN * C_SAMPLE_RATE:
-        try:
-            print("Fehler: Das Audiosegment ist fehlerhaft. Starte Stream neu...")
-            try:
-                audio_grabber.terminate()
-            except Exception as e:
-                print(f"Fehler beim Terminieren des alten Streams: {e}")
-            time.sleep(5)
-            audio_grabber = twitchrealtimehandler.TwitchAudioGrabber(
-                twitch_url="https://www.twitch.tv/astronomiemuseum",
-                blocking=True,  # wait until a segment is available
-                segment_length=C_SEG_LEN,  # segment length in seconds
-                rate=C_SAMPLE_RATE,  # sampling rate of the audio
-                channels=1,  # number of channels
-                dtype=np.int16  # quality of the audio could be [np.int16, np.int32, np.float32, np.float64]
-            )
-
-            print("Neuer Stream wurde gestartet.")
-        except Exception as e:
-            print(f"Fehler beim Neustart des Streams: {e}")
-            # TODO HANDLING - now via watchog
-            time.sleep(5)
-            raise Exception("Fehler beim Neustart des Streams !!!")
+    if audio_segment.shape[0] != 150000:
+        print("Fehler: Das Audiosegment ist leer.")
+        audio_grabber.terminate()
+        # time.sleep(10)
+        audio_grabber = twitchrealtimehandler.TwitchAudioGrabber(
+            twitch_url="https://www.twitch.tv/astronomiemuseum",
+            blocking=True,  # wait until a segment is available
+            segment_length=30,  # segment length in seconds
+            rate=5000,  # sampling rate of the audio
+            channels=1,  # number of channels
+            dtype=np.int16  # quality of the audio could be [np.int16, np.int32, np.float32, np.float64]
+        )
         continue
     end_time_meas("grab_audio")
 
     # Schritt 2: Spektrogramm plotten
     start_time_meas("plot_spectrogram")
     print("Erstelle Spektrogramm...")
-    plot_spectrogram(audio_segment, fs, C_DISPLAY)
+    plot_spectrogram(audio_segment, fs, DISPLAY)
     print("Spektrogramm wurde erstellt.")
+
+    # audio_grabber.terminate()
+    # print("Audioaufnahme beendet.\n")
     del audio_segment
     end_time_meas("plot_spectrogram")
 
@@ -186,7 +245,7 @@ while True:
     image_path1 = C_FILE_PATH_SPEC
     print("Starte Burst-Erkennung und Clusterbildung...")
     bursts, unique_labels, burst_positions, critical_bursts, non_critical_bursts = detection.detect_and_cluster_bursts(
-        image_path1, display=C_DISPLAY, eps=C_MS_CLUSTER_EPSILON, min_samples=C_MS_CLUSTER_MIN_SAMPLES)
+        image_path1, display=DISPLAY)
     print("Burst-Erkennung und Clusterbildung abgeschlossen.")
     end_time_meas("detect_and_cluster_bursts")
 
@@ -194,13 +253,7 @@ while True:
     n_critical += len(critical_bursts)
     n_non_critical += len(non_critical_bursts)
     print(f"Anzahl kritischer Bursts in dieser Stunde: {n_critical}")
-    print(f"Anzahl nicht kritischer Bursts in dieser Stunde: {n_non_critical}")
-    if len(critical_bursts) > 0 or len(non_critical_bursts) > 0:
-        # Copy spec to out
-        print("Kopiere Spektrogramm... (hat etwas detektiert)")
-        spec_fp_timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        spec_fp = f"{C_FILE_PATH_OUT_SPEC}{spec_fp_timestamp}-{len(critical_bursts)}-{len(non_critical_bursts)}.jpg"
-        os.system(f"cp {C_FILE_PATH_SPEC} {spec_fp}")
+    print(f"Anzahl nicht kritischer Bursts in dieser Stunde: {n_non_critical}\n")
 
     # Schritt 5: Ueberpruefen, ob 1 Stunden vergangen ist
     if datetime.now() - start_time >= save_interval:
@@ -228,7 +281,7 @@ while True:
         n_non_critical = 0
         start_time = datetime.now()
 
-    # Schritt 6: Ueberpruefen, ob 24 Stunden vergangen sind
+        # Schritt 6: Ueberpruefen, ob 24 Stunden vergangen sind
     if current_date != previous_date:
         previous_date = current_date
         print("Neuer Tag, lege neues csv-file an...")

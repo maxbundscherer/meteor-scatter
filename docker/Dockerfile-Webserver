@@ -1,0 +1,15 @@
+# Verwende ein offizielles Python-Image
+FROM python:3.11-slim
+
+# Setze das Arbeitsverzeichnis im Container
+WORKDIR /app
+
+# Kopiere die lokalen Dateien ins Image
+COPY meteor_webserver /app
+
+# Installiere Abhängigkeiten (wenn vorhanden)
+RUN pip install -r requirements-docker.txt
+
+# Starte das Python-Skript
+#CMD ["python", "app.py"]
+CMD python app.py --docker >> /home/meteor/Documents/meteor-webserver/log-out/log.txt 2>&1

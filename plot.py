@@ -4,6 +4,7 @@ import os
 import base64
 from venv import create
 import matplotlib
+
 matplotlib.use('Agg')  # Sicherstellen, dass Agg-Backend verwendet wird
 import time
 import threading
@@ -25,15 +26,14 @@ import asyncio
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
-
-
 lock = Lock()
 
 from database import get_average_last_24h
 from config import Config, config_get
 
+
 ########################################################################################################
-                            #   SETUP
+#   SETUP
 ########################################################################################################
 
 def setup_matplotlib_font():
@@ -47,6 +47,7 @@ def setup_matplotlib_font():
     plt.rcParams.update({'font.size': font_size})
     logging.info(f"Matplotlib: Schriftgröße auf {font_size} gesetzt.")
 
+
 # Definition von interpolate_color
 def interpolate_color(start_color, end_color, factor):
     """
@@ -58,8 +59,9 @@ def interpolate_color(start_color, end_color, factor):
         int(start_color[2] + (end_color[2] - start_color[2]) * factor),
     )
 
+
 ########################################################################################################
-                            #   PLOT CHARTS
+#   PLOT CHARTS
 ########################################################################################################
 
 def generate_chart(chart_func, file_path):
@@ -87,7 +89,7 @@ def generate_chart(chart_func, file_path):
 
 
 ########################################################################################################
-                            #   Zeiger Chart
+#   Zeiger Chart
 ########################################################################################################
 
 def create_zeiger_chart(file_path):
@@ -103,10 +105,8 @@ def create_zeiger_chart(file_path):
     step_count = len(range(untere_grenze, obere_grenze + 1, 50))  # Anzahl der Werte
     angles = np.linspace(180, 0, step_count)  # Dynamische Verteilung der Winkel von 180° bis 0°
 
-
-
-    durchschnitt= get_average_last_24h(file_path)
-    #print(f"Durchschnitt: {durchschnitt}")
+    durchschnitt = get_average_last_24h(file_path)
+    # print(f"Durchschnitt: {durchschnitt}")
 
     # Benutzerdefinierter Farbverlauf (Hellgelb → Orange → Dunkelrot)
     custom_colors = LinearSegmentedColormap.from_list(
@@ -169,7 +169,7 @@ def create_zeiger_chart(file_path):
 
     # Durchschnittswert anzeigen
     ax.text(0, -0.3, f"Wert: {durchschnitt}", fontsize=14, ha="center", color="black")
-    #ax.text(0, -0.4, "Durchschnitt", fontsize=10, ha="center", color="gray")
+    # ax.text(0, -0.4, "Durchschnitt", fontsize=10, ha="center", color="gray")
 
     # Titel hinzufügen, mehr Platz berücksichtigen
     datum = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -188,8 +188,10 @@ def create_zeiger_chart(file_path):
     buf.close()
 
     return img_base64
+
+
 ########################################################################################################
-                            #   Diagramm Tagesverlauf gestern
+#   Diagramm Tagesverlauf gestern
 ########################################################################################################
 def create_tagesverlauf_chart(file_path):
     title_padding = config_get("DEFAULT", "title_padding")  # 20 als Standardwert
@@ -214,9 +216,9 @@ def create_tagesverlauf_chart(file_path):
             return 0
 
         # Debugging-Ausgaben
-        #print("Konvertierte Timestamps (erste 5 Zeilen):")
-        #print(df_last_day.head())
-        #print("Erster und letzter Timestamp:", df_last_day['Timestamp'].min(), df_last_day['Timestamp'].max())
+        # print("Konvertierte Timestamps (erste 5 Zeilen):")
+        # print(df_last_day.head())
+        # print("Erster und letzter Timestamp:", df_last_day['Timestamp'].min(), df_last_day['Timestamp'].max())
 
         # Diagrammerstellung
         try:
@@ -232,37 +234,39 @@ def create_tagesverlauf_chart(file_path):
 
             # x-Werte sind die Stunden
             x_labels = df_last_day['Timestamp'].dt.strftime('%H').tolist()
-            #print("x_labels:", x_labels)
+            # print("x_labels:", x_labels)
 
-            #Zeige jede zweite Beschriftung an für bessere Übersichtlichkeit auf der X-Achse
+            # Zeige jede zweite Beschriftung an für bessere Übersichtlichkeit auf der X-Achse
             n = 2  # Nur jede zweite Stunde anzeigen
             x_positions = range(len(x_labels))  # Positionen für die X-Achse
-            plt.xticks(x_positions[::n], x_labels[::n], rotation=45)  # Schrift um 45 Grad gedreht für bessere Lesbarkeit
+            plt.xticks(x_positions[::n], x_labels[::n],
+                       rotation=45)  # Schrift um 45 Grad gedreht für bessere Lesbarkeit
 
             # Dynamische berechnung des maximalen y-Wertes für unterschiedliche Zeiten im Jahr mit 5% Aufschlag, sodass nicht der Maximalwert ganz oben am Bildrand hängt
             max_y_value = max(df_last_day['Anzahl'].max(), df_last_day['Kritisch'].max()) * 1.05
-            #print("max Y Achse berechnen:", max_y_value)
+            # print("max Y Achse berechnen:", max_y_value)
             # Erstelle die linke Y-Achse für die "Anzahl"
             ax1.bar(x_labels, df_last_day['Anzahl'], color='blue', alpha=1, label='Anzahl')
             ax1.set_xlabel("Stunde")
             ax1.set_ylabel("Anzahl", color='blue')
             ax1.tick_params(axis='y', labelcolor='blue')
-            ax1.set_ylim(0, max_y_value)  # Setze den gleichen Maximalwert für ax1, sodass die Kritischen Werte vergleichbar bleiben
-            #print("linke achse erstellt", ax1.get_ylim())
+            ax1.set_ylim(0,
+                         max_y_value)  # Setze den gleichen Maximalwert für ax1, sodass die Kritischen Werte vergleichbar bleiben
+            # print("linke achse erstellt", ax1.get_ylim())
             # Erstelle die zweite Y-Achse für "Kritisch"
             ax2 = ax1.twinx()
             ax2.bar(x_labels, df_last_day['Kritisch'], color='#C72426', alpha=1, label='Kritisch')
             ax2.set_ylabel("davon überkritisch", color='#C72426')
             ax2.tick_params(axis='y', labelcolor='#C72426')
             ax2.set_ylim(0, max_y_value)  # Setze den gleichen Maximalwert für ax2
-            #print("rechte achse erstellt", ax2.get_ylim())
+            # print("rechte achse erstellt", ax2.get_ylim())
             # Extrahiere das gestrige Datum aus den Daten
             anzeigen_datum = df_last_day['Timestamp'].dt.date.iloc[0]
-            #print("anzeigen Datum:", anzeigen_datum)
+            # print("anzeigen Datum:", anzeigen_datum)
             # Titel und Legende hinzufügen
             plt.title(f"Stündliche Auswertung vom: {anzeigen_datum}", pad=title_padding)
-            #ax1.legend(loc="upper left")
-            #ax2.legend(loc="upper right")
+            # ax1.legend(loc="upper left")
+            # ax2.legend(loc="upper right")
             plt.tight_layout()
 
             # Diagramm in Base64 umwandeln (mit 300dpi und figsize 10,6 entsteht ein Bild mit 3000x1800px, kann reduziert werden wenn nötig)
@@ -270,7 +274,7 @@ def create_tagesverlauf_chart(file_path):
             plt.savefig(img_buf, dpi=300, format='png')
             img_buf.seek(0)
             img_base64_tagesverlauf = base64.b64encode(img_buf.read()).decode('utf-8').strip()
-            #print("Länge des Base64-konvertierten Strings:", len(img_base64_tagesverlauf))
+            # print("Länge des Base64-konvertierten Strings:", len(img_base64_tagesverlauf))
             plt.close(fig)
             return img_base64_tagesverlauf
         except Exception as e:
@@ -283,7 +287,7 @@ def create_tagesverlauf_chart(file_path):
 
 
 ########################################################################################################
-                            #   Diagramm letzen 7 Tage
+#   Diagramm letzen 7 Tage
 ########################################################################################################
 def create_week_chart(file_path):
     title_padding = config_get("DEFAULT", "title_padding")
@@ -311,15 +315,15 @@ def create_week_chart(file_path):
             return 0
 
         # Gruppiere die Daten pro Tag und summiere die Werte (datetime bleibt erhalten)
-        df_last_7_days.loc[:,'Date'] = df_last_7_days['Timestamp'].dt.floor('D')  # Nur auf Tagesniveau abrunden
+        df_last_7_days.loc[:, 'Date'] = df_last_7_days['Timestamp'].dt.floor('D')  # Nur auf Tagesniveau abrunden
         daily_summary = df_last_7_days.groupby('Date').agg({
             'Anzahl': 'sum',  # Summiere die Spalte "Anzahl"
             'Kritisch': 'sum'  # Summiere die Spalte "Kritisch"
         }).reset_index()  # Reset des Index, damit 'Date' wieder eigene Spalte ist
 
         # Debugging-Ausgabe
-        #print("Tägliche Summen der letzten 7 Tage:")
-        #print(daily_summary)
+        # print("Tägliche Summen der letzten 7 Tage:")
+        # print(daily_summary)
 
         # Diagrammerstellung
         try:
@@ -336,12 +340,12 @@ def create_week_chart(file_path):
             # x-Werte sind die Stunden
             x_labels = daily_summary['Date'].dt.strftime('%d').tolist()
 
-            n=1     #jeden Wert anzeigen
+            n = 1  # jeden Wert anzeigen
             x_positions = range(len(x_labels))  # Positionen für die X-Achse
-            plt.xticks(x_positions[::n], x_labels[::n], rotation=45) # X-Beschriftungen 45 Grad verdreht anzeigen
+            plt.xticks(x_positions[::n], x_labels[::n], rotation=45)  # X-Beschriftungen 45 Grad verdreht anzeigen
 
             # Berechnung des maximalen y-Wertes
-            max_y_value = max(daily_summary['Anzahl'].max(), daily_summary['Kritisch'].max())* 1.05
+            max_y_value = max(daily_summary['Anzahl'].max(), daily_summary['Kritisch'].max()) * 1.05
 
             # Erstelle die linke Y-Achse für die "Anzahl"
             ax1.bar(x_labels, daily_summary['Anzahl'], color='blue', alpha=1, label='Anzahl')
@@ -362,9 +366,11 @@ def create_week_chart(file_path):
             end_datum = daily_summary['Date'].max()  # Letztes Datum im Bereich (spätestes Datum)
 
             # Titel und Legende hinzufügen
-            plt.title(f"7 - Tage - Übersicht vom {start_datum.strftime('%Y-%m-%d')} bis {end_datum.strftime('%Y-%m-%d')}", pad=title_padding)
-            #ax1.legend(loc="upper left")
-            #ax2.legend(loc="upper right")
+            plt.title(
+                f"7 - Tage - Übersicht vom {start_datum.strftime('%Y-%m-%d')} bis {end_datum.strftime('%Y-%m-%d')}",
+                pad=title_padding)
+            # ax1.legend(loc="upper left")
+            # ax2.legend(loc="upper right")
             plt.tight_layout()
 
             # Diagramm in Base64 umwandeln
@@ -382,8 +388,9 @@ def create_week_chart(file_path):
         print(f"Allgemeiner Fehler: {e}")
         return 0
 
+
 ########################################################################################################
-                            #   Diagramm letzen 30 Tage
+#   Diagramm letzen 30 Tage
 ########################################################################################################
 def create_month_chart(file_path):
     title_padding = config_get("DEFAULT", "title_padding")
@@ -405,7 +412,7 @@ def create_month_chart(file_path):
         last_month_start = max_date - pd.Timedelta(days=29)  # Beginn der letzten 30 vollständigen Tage
 
         df_last_30_days = df[(df['Timestamp'].dt.floor('D') >= last_month_start) &
-                            (df['Timestamp'].dt.floor('D') <= max_date)].copy()
+                             (df['Timestamp'].dt.floor('D') <= max_date)].copy()
         if df_last_30_days.empty:
             print("Keine Daten für die letzten 30 Tage gefunden.")
             return 0
@@ -418,8 +425,8 @@ def create_month_chart(file_path):
         }).reset_index()  # Reset des Index, damit 'Date' wieder eigene Spalte ist
 
         # Debugging-Ausgabe
-        #print("Tägliche Summen der letzten 30 Tage:")
-        #print(daily_summary.head())
+        # print("Tägliche Summen der letzten 30 Tage:")
+        # print(daily_summary.head())
 
         # Diagrammerstellung
         try:
@@ -446,7 +453,7 @@ def create_month_chart(file_path):
             plt.xticks(x_positions[::n], x_labels[::n], rotation=45)  # Nur jede n-te Position anzeigen
 
             # Berechnung des maximalen y-Wertes basierend auf beiden Datenreihen
-            max_y_value = max(daily_summary['Anzahl'].max(), daily_summary['Kritisch'].max())* 1.05
+            max_y_value = max(daily_summary['Anzahl'].max(), daily_summary['Kritisch'].max()) * 1.05
 
             # Erstelle die linke Y-Achse für die "Anzahl"
             ax1.bar(x_positions, daily_summary['Anzahl'], width=bar_width, color='blue', alpha=1, label='Anzahl')
@@ -466,9 +473,11 @@ def create_month_chart(file_path):
             end_datum = daily_summary['Date'].max()  # Letztes Datum im Bereich (spätestes Datum)
 
             # Titel und Legende hinzufügen
-            plt.title(f"30 - Tage - Übersicht vom {start_datum.strftime('%Y-%m-%d')} bis {end_datum.strftime('%Y-%m-%d')}",pad=title_padding)
-            #ax1.legend(loc="upper left")
-            #ax2.legend(loc="upper right")
+            plt.title(
+                f"30 - Tage - Übersicht vom {start_datum.strftime('%Y-%m-%d')} bis {end_datum.strftime('%Y-%m-%d')}",
+                pad=title_padding)
+            # ax1.legend(loc="upper left")
+            # ax2.legend(loc="upper right")
             plt.tight_layout()
 
             # Diagramm in Base64 umwandeln
@@ -486,4 +495,3 @@ def create_month_chart(file_path):
     except Exception as e:
         print(f"Allgemeiner Fehler: {e}")
         return 0
-

@@ -5,6 +5,7 @@ import base64
 from initapp import initialize_app
 from venv import create
 import matplotlib
+
 matplotlib.use('Agg')  # Sicherstellen, dass Agg-Backend verwendet wird
 import time
 import threading
@@ -21,17 +22,18 @@ import plotly.io as pio
 import asyncio
 from flask_apscheduler import APScheduler
 
-
 ####################  Packages from other .py     #################################
 from config import Config, config_get, calculate_last_month
-from plot import setup_matplotlib_font, generate_chart,create_zeiger_chart,create_tagesverlauf_chart,create_week_chart,create_month_chart
-from database import load_or_create_dataframe, scheduled_csv_update, update_csv_if_needed, check_missing_days, scan_folder
+from plot import setup_matplotlib_font, generate_chart, create_zeiger_chart, create_tagesverlauf_chart, \
+    create_week_chart, create_month_chart
+from database import load_or_create_dataframe, scheduled_csv_update, update_csv_if_needed, check_missing_days, \
+    scan_folder
 from initapp import initialize_app
 
 #####################################################
 
 
-#Werte aus der Config-Klasse in Flask-Anwendung laden  -  Abruf über app.config
+# Werte aus der Config-Klasse in Flask-Anwendung laden  -  Abruf über app.config
 app = initialize_app()
 setup_matplotlib_font()
 
@@ -108,6 +110,7 @@ def index():
         missing_days=missing_days
     )
 
+
 @app.route('/api/dynamischer_inhalt', methods=['GET'])
 def dynamischer_inhalt():
     """API-Route für den Abruf von dynamischen Inhalten"""
@@ -117,6 +120,7 @@ def dynamischer_inhalt():
     response.headers['Pragma'] = 'no-cache'  # Ältere Browser
     response.headers['Expires'] = '0'  # Immer abgelaufen
     return response
+
 
 # Dynamische Chart-Routen
 @app.route("/load_chart/<chart_type>", methods=["GET"])
@@ -151,7 +155,7 @@ def load_chart(chart_type):
         print(f"Fehler beim Speichern des Bildes: {e}")
         return jsonify({"error": "Fehler beim Speichern des Bildes."}), 500
 
-    #Rückgabe der URL des Bildes nach Erfolg
+    # Rückgabe der URL des Bildes nach Erfolg
     return jsonify({"img_url": f"/{output_path}"})
 
 
@@ -161,6 +165,7 @@ def home():
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return render_template('index.html', time=current_time)
 
+
 ###################################################################################################################
 
 ###################################################################################################################
@@ -169,11 +174,15 @@ debug_value = config_get('DEFAULT', 'debug').lower() == 'true'
 
 ###################################################################################################################
 if __name__ == '__main__':
-
     scheduler.start()  # Startet den Scheduler im Hintergrund
 
+    import sys
+
+    # Check if Parameter --docker is set
+    print("Überprüfe, ob Docker-Umgebung erkannt wurde...")
+    
+    if '--docker' in sys.argv:
+        print("Docker-Umgebung erkannt.")
+        os.system("pip freeze > /home/meteor/Documents/meteor-webserver/log-out/requirements-backup.txt")
+
     app.run(host="0.0.0.0", port=5000, debug=debug_value)
-
-
-
-

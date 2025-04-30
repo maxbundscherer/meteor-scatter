@@ -20,7 +20,7 @@
         <img src="{{ url_for('static', filename='ohm-logo.png') }}" height="60" class="mx-2 my-1" alt="Logo 1">
         <img src="{{ url_for('static', filename='BRAMSlogo.png') }}" height="60" class="mx-2 my-1" alt="Logo 2">
         <img src="{{ url_for('static', filename='sternwartenbg.png') }}" height="60" class="mx-2 my-1" alt="Logo 3">
-        <img src="{{ url_for('static', filename='sonneberg.png') }}" height="60" class="mx-2 my-1" alt="Logo 4">
+        <img src="{{ url_for('static', filename='sonneberg.PNG') }}" height="60" class="mx-2 my-1" alt="Logo 4">
         <img src="{{ url_for('static', filename='Regiomontanus.png') }}" height="60" class="mx-2 my-1" alt="Logo 5">
     </div>
 </header>
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-                <!-- Zeigerdiagramm -->
+        <!-- Zeigerdiagramm -->
         <div class="col-lg-4 col-md-12 box">
             <div class="zeiger-container mx-auto">
                 <img id="zeiger-chart" class="img-fluid" src="" alt="Zeigerdiagramm Chart">
@@ -60,26 +60,26 @@
 
     <section class="text-center my-4">
         <h3 style="display: inline;">Aktuelles Datum und Uhrzeit:
-            <span id="clock" class="time">{{ time }}</span> </h3>
+            <span id="clock" class="time">{{ time }}</span></h3>
         <h3>Ein Projekt von: R. Heinrich, S. Kolb, Prof. Th. Lauterbach, M. Bundscherer - Nürnberg 2024</h3>
     </section>
 
 
-        <h4>Datenprüfung</h4>
+    <h4>Datenprüfung</h4>
     <p><strong>Zeitraum ausgewertet:</strong> {{ start_date }} bis {{ end_date }}</p>
 
-     <div id="missing-days">
-         {% if missing_days %}
-             <h4>Fehlende Datensätze:</h4>
-             <ul>
-                 {% for day in missing_days %}
-                     <li>{{ day }}</li>
-                 {% endfor %}
-             </ul>
-         {% else %}
-             <p>Alle Datensätze sind vorhanden! 😊</p>
-         {% endif %}
-     </div>
+    <div id="missing-days">
+        {% if missing_days %}
+            <h4>Fehlende Datensätze:</h4>
+            <ul>
+                {% for day in missing_days %}
+                    <li>{{ day }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Alle Datensätze sind vorhanden! 😊</p>
+        {% endif %}
+    </div>
 </main>
 
 <script>
