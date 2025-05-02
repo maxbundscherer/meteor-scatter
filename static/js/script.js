@@ -8,9 +8,10 @@ const reloadInterval = typeof RELOAD_INTERVAL !== 'undefined' ? RELOAD_INTERVAL 
 
 // ------------------- Charts laden -------------------
 function ladeChart(chartId, chartType) {
-    console.log(`Lade Chart: ${chartId} mit Typ: ${chartType}`);
 
-    const url = `/load_chart/${chartType}`; // Dynamische URL passend zum Typ
+    let base_url_fetcher = `${SCRIPT_ROOT}`;
+
+    const url = `${base_url_fetcher}/load_chart/${chartType}`; // Dynamische URL passend zum Typ
 
     // API-Aufruf
     fetch(url)
@@ -52,8 +53,13 @@ async function aktualisiereDynamischenInhalt() {
     console.log("Dynamische Inhalte und Charts werden aktualisiert...");
 
     try {
+
+        let base_url_fetcher = `${SCRIPT_ROOT}`;
+
+        const url = `${base_url_fetcher}/api/dynamischer_inhalt`; // API-URL für das Intervall
+
         // API-Aufruf zur Abfrage der fehlenden Tage
-        const response = await fetch('/api/dynamischer_inhalt');
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`API-Fehler dynamischer Inhalt: ${response.statusText}`);
@@ -88,6 +94,7 @@ function updateMissingDays(missingDays) {
         missingDaysElement.innerHTML = 'Keine fehlenden Tage!';
     }
 }
+
 // Periodisch dynamische Inhalte (Missing Days und Charts) laden
 setInterval(aktualisiereDynamischenInhalt, reloadInterval);
 
@@ -156,8 +163,13 @@ function toggleSlideshow() {
 
 // ------------------- Dynamisches Intervall (API-Aufruf) -------------------
 function loadConfigAndStartSlide() {
+
+    let base_url_fetcher = `${SCRIPT_ROOT}`;
+
+    const url = `${base_url_fetcher}/config/slideshow_interval`; // API-URL für das Intervall
+
     // Hole die Konfiguration von der Flask-API
-    fetch('/config/slideshow_interval')
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP-Fehler! Status: ${response.status}`);
@@ -216,7 +228,6 @@ window.onload = function () {
     loadConfigAndStartSlide();
 
 
-
     // Event-Listener für Buttons setzen
     setupButtonListeners();
 
@@ -226,8 +237,7 @@ window.onload = function () {
 
     // Slideshow starten
     showSlides(slideIndex);
-    autoSlide(slideshow_interval);
-
+    // autoSlide(slideshow_interval);
 
     // Uhrzeit starten
     updateClock();

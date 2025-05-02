@@ -12,6 +12,10 @@
     <!-- CSS Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=1">
 
+    <script>
+        const SCRIPT_ROOT = "{{ request.script_root }}";
+    </script>
+
 </head>
 <body>
 <header class="d-flex justify-content-between align-items-center my-4 flex-wrap">

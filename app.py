@@ -21,6 +21,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import asyncio
 from flask_apscheduler import APScheduler
+from flask import request
 
 ####################  Packages from other .py     #################################
 from config import Config, config_get, calculate_last_month
@@ -145,8 +146,18 @@ def load_chart(chart_type):
     if not img_base64:
         return jsonify({"error": f"Fehler beim Erstellen des {chart_type}-Charts."}), 500
 
+    base_url = request.script_root
+
+    if base_url != '':
+        if base_url[-1] != '/':
+            base_url = base_url + "/"
+
+        if base_url.startswith('/'):
+            base_url = base_url[1:]
+
     # Datei speichern
     output_path = f"static/{chart_type}_chart.png"
+
     try:
         with open(output_path, "wb") as f:
             f.write(base64.b64decode(img_base64))  # Base64-Dekodierung ins PNG-Format
@@ -156,6 +167,9 @@ def load_chart(chart_type):
         return jsonify({"error": "Fehler beim Speichern des Bildes."}), 500
 
     # Rückgabe der URL des Bildes nach Erfolg
+
+    output_path = f"{base_url}static/{chart_type}_chart.png"
+
     return jsonify({"img_url": f"/{output_path}"})
 
 
@@ -180,9 +194,31 @@ if __name__ == '__main__':
 
     # Check if Parameter --docker is set
     print("Überprüfe, ob Docker-Umgebung erkannt wurde...")
-    
+
     if '--docker' in sys.argv:
         print("Docker-Umgebung erkannt.")
         os.system("pip freeze > /home/meteor/Documents/meteor-webserver/log-out/requirements-backup.txt")
 
+
+    class XScriptNameMiddleware:
+        def __init__(self, app):
+            self.app = app
+
+        def __call__(self, environ, start_response):
+
+            script_name = environ.get('HTTP_X_SCRIPT_NAME', '')
+
+            if script_name != '':
+
+                # script_name = script_name + "fail"
+                environ['SCRIPT_NAME'] = script_name
+                # print(f"X-Script-Name gesetzt: {script_name}")
+            else:
+                environ['SCRIPT_NAME'] = ''
+                # print("Kein X-Script-Name gesetzt.")
+
+            return self.app(environ, start_response)
+
+
+    app.wsgi_app = XScriptNameMiddleware(app.wsgi_app)
     app.run(host="0.0.0.0", port=5000, debug=debug_value)

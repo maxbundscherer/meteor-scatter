@@ -1,5 +1,6 @@
 rm -rf meteor_webserver
-cp -r ../ meteor_webserver
+#cp -r ../ meteor_webserver
+rsync -a --exclude='docker' ../ meteor_webserver/
 rm -rf meteor_webserver/meteor_detect_class
 docker stop ms-webserver
 docker rm ms-webserver

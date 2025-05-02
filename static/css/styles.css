@@ -1,8 +1,8 @@
 /* Allgemeiner Body-Stil */
 body {
-        min-height: 100vh;
-    background: url('../hintergrundki1.jpg'), linear-gradient(to bottom, #000, #333) ;
-    background-size: cover ;
+    min-height: 100vh;
+    background: url('../hintergrundki1.jpg'), linear-gradient(to bottom, #000, #333);
+    background-size: cover;
     color: white;
 }
 
@@ -22,6 +22,7 @@ h3 {
     text-align: center;
     color: white;
 }
+
 h4 {
     font-size: 16px;
     font-weight: bold;
@@ -108,14 +109,16 @@ button:hover {
         flex-direction: column;
     }
 
-@media (max-width: 576px) {
-    h1 {
-        font-size: 48px; /* Schriftgröße auf Mobilgeräten verkleinern */
+    @media (max-width: 576px) {
+        h1 {
+            font-size: 48px; /* Schriftgröße auf Mobilgeräten verkleinern */
+        }
+
+        .slideshow-container img,
+        .zeiger-container img {
+            border-radius: 5px; /* Radius für kleinere Bildschirme verringern */
+        }
     }
 
-    .slideshow-container img,
-    .zeiger-container img {
-        border-radius: 5px; /* Radius für kleinere Bildschirme verringern */
-    }
 }
 
