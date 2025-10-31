@@ -1,4 +1,6 @@
-# Meteor Scatter
+# Meteor Scatter (ML-based)
+
+**Note**: If you are here regarding the publication *Meteor Detection based on Forward Scattering with SDR and the BRAMS Beacon*: This page shows the *ML-based* approach. Click [here](dsp/) for the *DSP-based* approach.
 
 This project was developed as part of a student project. The aim was to detect and classify meteors using ML methods.
 

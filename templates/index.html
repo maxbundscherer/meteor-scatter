@@ -46,6 +46,17 @@
                 <img id="month-chart" class="img-fluid" src="" alt="Monatsübersicht Chart">
             </div>
 
+            <!-- Zusätzliche statische PNG-Bilder -->
+            <div class="mySlides fade">
+                <img src="{{ url_for('static', filename='slides/Folie1.png') }}" class="img-fluid" alt="Zusatzbild 1">
+            </div>
+            <div class="mySlides fade">
+                <img src="{{ url_for('static', filename='slides/Folie2.png') }}" class="img-fluid" alt="Zusatzbild 2">
+            </div>
+            <div class="mySlides fade">
+                <img src="{{ url_for('static', filename='slides/Folie3.png') }}" class="img-fluid" alt="Zusatzbild 3">
+            </div>
+
             <!-- *** Buttons bleiben außerhalb der Bilder *** -->
             <div class="slideshow-controls">
                 <button id="prevSlide">Zurück</button>
