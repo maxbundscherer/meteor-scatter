@@ -1,6 +1,10 @@
 # Meteor Scatter (ML-based)
 
-**Note**: If you are here regarding the publication *Meteor Detection based on Forward Scattering with SDR and the BRAMS Beacon*: This page shows the *ML-based* approach. Click [here](dsp/) for the *DSP-based* approach.
+**Attention**: This repository will be archived soon. A new implementation can be
+found [here](https://github.com/maxbundscherer/meteor-scatter-v2).
+
+**Note**: If you are here regarding the publication *Meteor Detection based on Forward Scattering with SDR and the BRAMS
+Beacon*: This page shows the *ML-based* approach. Click [here](dsp/) for the *DSP-based* approach.
 
 This project was developed as part of a student project. The aim was to detect and classify meteors using ML methods.
 
@@ -40,8 +44,8 @@ days will be skipped and not displayed in the charts.
 Furthermore the `final_dataframe.csv` will be validated periotically (setup in `config.ini`:
 `#Scheduler Aktualisierungszeit CSV-Datensatz in minutes - schedule_interval = 2`) the validation process will search
 for the last entry and complare to the date of yesterday, no action if it matches, update file if there is a missmatch
-on the frontend the charts will be reloaded with a certain interval to be sure all displays are always up to date. (
-setup in `config.ini`: `#Aktualisierungszeit Website reload - reload_interval = 150000 - #60000 1min / 300000 5min`)
+on the frontend the charts will be reloaded with a certain interval to be sure all displays are always up to date.
+(setup in `config.ini`: `#Aktualisierungszeit Website reload - reload_interval = 150000 - #60000 1min / 300000 5min`)
 
 ### Data Requirements
 
