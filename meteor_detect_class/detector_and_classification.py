@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 
 
-def detect_and_cluster_bursts(image_path, eps=30, min_samples=5, display=True):
+def detect_and_cluster_bursts(image_path, eps=30, min_samples=5, display=True, output_path=None):
     # Bild einlesen und in Graustufen konvertieren
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
@@ -64,11 +64,14 @@ def detect_and_cluster_bursts(image_path, eps=30, min_samples=5, display=True):
             x_min, y_min = np.min(cluster_points, axis=0)
             x_max, y_max = np.max(cluster_points, axis=0)
             rect_positions.append((x_min, y_min, x_max, y_max))
-            cv2.rectangle(image, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0), 2)
+            cv2.rectangle(image, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (0, 0, 255), 2)
+
+    if output_path:
+        cv2.imwrite(output_path, image)
 
     if display:
         fig, ax = plt.subplots()
-        plt.imshow(image)
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
         ax.set_xticks(np.linspace(0, 495, 6))  # 6 Ticks
         ax.set_xticklabels(np.linspace(0, 25, 6).round(2))  # Zeit in Sekunden
@@ -81,7 +84,7 @@ def detect_and_cluster_bursts(image_path, eps=30, min_samples=5, display=True):
         plt.title('Spectrogram 25 Seconds')
         # plt.yscale()
         plt.title("Burst-Erkennung und Clusterbildung mit ORB und DBSCAN")
-        plt.savefig('spectrogram2detected.jpg', format='jpg', bbox_inches='tight', pad_inches=0)
+        plt.savefig(output_path or 'spectrogram2detected.jpg', format='jpg', bbox_inches='tight', pad_inches=0)
         if display:
             plt.show()
 

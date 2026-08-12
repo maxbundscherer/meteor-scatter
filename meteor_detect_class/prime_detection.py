@@ -11,18 +11,22 @@ import struct
 import twitchrealtimehandler
 import detector_and_classification as detection
 import os
+import shutil
 
 # TODO ALERTS
 
 C_FILE_PATH_OUT = "/home/meteor/Documents/meteor-detection/csv-out/"  # TODO CSV OUT PATH
 C_FILE_PATH_OUT_SPEC = "/home/meteor/Documents/meteor-detection/spec-out/"  # TODO SPEC OUT PATH
 
-C_MS_SPEC_CUT_FACTOR = 8  # TODO Noise Filter
+# C_MS_SPEC_CUT_FACTOR = 8  # TODO Noise Filter
+C_MS_SPEC_CUT_FACTOR = 12  # TODO Noise Filter
 
 C_MS_CLUSTER_MIN_SAMPLES = 5  # TODO Cluster Filter
 C_MS_CLUSTER_EPSILON = 30  # TODO Cluster Filter
 
 C_FILE_PATH_SPEC = "/tmp/spectrogram2.jpg"
+C_FILE_PATH_SPEC_DEBUG_NO_VMIN = "/tmp/spectrogram2-no-vmin.jpg"
+C_FILE_PATH_SPEC_DETECTED = "/tmp/spectrogram2-detected.jpg"
 C_DISPLAY = False
 C_SAMPLE_RATE = 5000
 C_SEG_LEN = 30
@@ -72,6 +76,9 @@ def plot_spectrogram(iq_segment, fs, display=True, vmin=10, vmax=30):
     # Bandbreite fuer das Frequenzband
     bandwidth = np.sum(noise_band) * delta_f  # Bandbreite in Hz
 
+    # epsilon = 1e-10
+    # Pxx += epsilon
+
     # Gesamte Leistung in diesem Frequenzband
     band_power = np.sum(Pxx[noise_band])  # Summe der Leistung im Frequenzband
     power_density_db_hz = 10 * np.log10(band_power / bandwidth)
@@ -81,8 +88,13 @@ def plot_spectrogram(iq_segment, fs, display=True, vmin=10, vmax=30):
     Pxx_db = 10 * np.log10(Pxx)  # in dB
     Pxx_db[np.isinf(Pxx_db)] = -np.inf
 
+    temp_vmin = power_density_db_hz / factor + C_MS_SPEC_CUT_FACTOR
+    tmp_vmax = 40
+
+    print("My current vmin is: ", temp_vmin)
+
     plt.imshow(Pxx_db, aspect='auto', origin='lower', extent=[bins[0], bins[-1], freqs[0], freqs[-1]],
-               vmin=power_density_db_hz / factor + C_MS_SPEC_CUT_FACTOR, vmax=40)
+               vmin=temp_vmin, vmax=tmp_vmax)
     # plt.xlabel('Time [s]')
     # plt.ylabel('Frequency [Hz]')
     # plt.title('Spectrogram 25 Seconds')
@@ -91,11 +103,19 @@ def plot_spectrogram(iq_segment, fs, display=True, vmin=10, vmax=30):
     fig = plt.axis('off')
     # plt.tight_layout()
     plt.savefig(C_FILE_PATH_SPEC, format='jpg', bbox_inches='tight', pad_inches=0)
+
+    plt.figure()
+    plt.imshow(Pxx_db, aspect='auto', origin='lower', extent=[bins[0], bins[-1], freqs[0], freqs[-1]],
+               vmax=tmp_vmax)
+    plt.ylim(800, 1200)
+    plt.axis('off')
+    plt.savefig(C_FILE_PATH_SPEC_DEBUG_NO_VMIN, format='jpg', bbox_inches='tight', pad_inches=0)
+
     if display:
         plt.show()
     # plt.show(block=False)
     del Pxx, Pxx_db, band_power
-    plt.close()
+    plt.close('all')
 
 
 # Process Loop
@@ -186,7 +206,8 @@ while True:
     image_path1 = C_FILE_PATH_SPEC
     print("Starte Burst-Erkennung und Clusterbildung...")
     bursts, unique_labels, burst_positions, critical_bursts, non_critical_bursts = detection.detect_and_cluster_bursts(
-        image_path1, display=C_DISPLAY, eps=C_MS_CLUSTER_EPSILON, min_samples=C_MS_CLUSTER_MIN_SAMPLES)
+        image_path1, display=C_DISPLAY, eps=C_MS_CLUSTER_EPSILON, min_samples=C_MS_CLUSTER_MIN_SAMPLES,
+        output_path=C_FILE_PATH_SPEC_DETECTED)
     print("Burst-Erkennung und Clusterbildung abgeschlossen.")
     end_time_meas("detect_and_cluster_bursts")
 
@@ -199,8 +220,10 @@ while True:
         # Copy spec to out
         print("Kopiere Spektrogramm... (hat etwas detektiert)")
         spec_fp_timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        spec_fp = f"{C_FILE_PATH_OUT_SPEC}{spec_fp_timestamp}-{len(critical_bursts)}-{len(non_critical_bursts)}.jpg"
-        os.system(f"cp {C_FILE_PATH_SPEC} {spec_fp}")
+        spec_fp_prefix = f"{C_FILE_PATH_OUT_SPEC}{spec_fp_timestamp}-{len(critical_bursts)}-{len(non_critical_bursts)}"
+        shutil.copy(C_FILE_PATH_SPEC, f"{spec_fp_prefix}.jpg")
+        shutil.copy(C_FILE_PATH_SPEC_DEBUG_NO_VMIN, f"{spec_fp_prefix}-debug-no-vmin.jpg")
+        shutil.copy(C_FILE_PATH_SPEC_DETECTED, f"{spec_fp_prefix}-detected.jpg")
 
     # Schritt 5: Ueberpruefen, ob 1 Stunden vergangen ist
     if datetime.now() - start_time >= save_interval:

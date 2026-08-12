@@ -5,6 +5,8 @@ import base64
 from venv import create
 import matplotlib
 
+from LocalData import LocalData
+
 matplotlib.use('Agg')  # Sicherstellen, dass Agg-Backend verwendet wird
 import time
 import threading
@@ -450,10 +452,64 @@ def create_month_chart(file_path):
             # X-Beschriftungen mit den Tagen
             x_labels = daily_summary['Date'].dt.strftime('%d').tolist()
             n = 2  # Zeigt jede zweite Beschriftung an (kann nach Bedarf angepasst werden)
-            plt.xticks(x_positions[::n], x_labels[::n], rotation=45)  # Nur jede n-te Position anzeigen
 
             # Berechnung des maximalen y-Wertes basierend auf beiden Datenreihen
             max_y_value = max(daily_summary['Anzahl'].max(), daily_summary['Kritisch'].max()) * 1.05
+
+            day_labels = {}
+
+            for item in LocalData.overwrite_years(LocalData.data_items):
+
+                # Maske für diesen Bereich
+                mask = (daily_summary['Date'] >= item.start) & (daily_summary['Date'] <= item.end)
+
+                if not mask.any():
+                    continue  # Bereich liegt nicht im Diagramm → überspringen
+
+                # Positionsindizes holen
+                pos = mask.to_numpy().nonzero()[0]
+                pos_start = pos[0]
+                pos_end = pos[-1]
+
+                # x-Koordinaten
+                x_start = x_positions[pos_start] - bar_width / 2
+                x_end = x_positions[pos_end] + bar_width / 2
+
+                # Farbe abhängig vom Bereich oder statisch
+                ax1.axvspan(x_start, x_end, alpha=0.3, color="yellow")
+
+                # Center ermitteln
+                # Exakte x-Positionen der betroffenen Tage holen
+                affected_x = [x_positions[i] for i in pos]
+
+                # Exakt der Mittelpunkt über den Balken
+                x_center = sum(affected_x) / len(affected_x)
+
+                # Tag bestimmen
+                day_key = daily_summary['Date'].iloc[pos_start]
+
+                # Label in Liste einfügen
+                day_labels.setdefault(day_key, {"x": x_center, "labels": []})
+                day_labels[day_key]["labels"].append(item.label)
+
+            # Alle gesammelten Labels als EIN Label pro Tag zeichnen
+            for day_key, entry in day_labels.items():
+                x_center = entry["x"]
+
+                combined = ", ".join(entry["labels"])
+
+                ax1.text(
+                    x_center,
+                    max_y_value * 0.98,  # ⬅️ Direkt oben im gelben Bereich
+                    combined,
+                    ha="center",
+                    va="top",  # ⬅️ Oben bündig
+                    rotation=90,
+                    fontsize=10,
+                    color="black"
+                )
+
+            plt.xticks(x_positions[::n], x_labels[::n], rotation=45)  # Nur jede n-te Position anzeigen
 
             # Erstelle die linke Y-Achse für die "Anzahl"
             ax1.bar(x_positions, daily_summary['Anzahl'], width=bar_width, color='blue', alpha=1, label='Anzahl')
